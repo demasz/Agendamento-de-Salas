@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Header Senac</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://portal.sc.senac.br/assets/vendor/fontawesome/css/all.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <header class="header-senac">
+    <div class="logo">
+      <img src="https://portal.sc.senac.br/assets/images/logo-branco-80-anos.png" alt="Senac Fecomércio Sesc" />
+    </div>
+
+    <div class="direita">
+      <div class="redes">
+
+        <!-- lembrar de colocar as fotos do site -->
+        <a href="https://www.facebook.com/SenacSC" target="_blank"><i class="fa-brands fa-facebook"></i></a>
+        <a href="https://www.instagram.com/senacsantacatarina/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+        <a href="https://twitter.com/SenacSC" target="_blank"><i class="fa-brands fa-twitter"></i></a>
+        <a href="https://www.linkedin.com/school/senac-sc" target="_blank"><i class="fa-brands fa-linkedin"></i></a>
+        <a href="https://www.youtube.com/SenacSC" target="_blank"><i class="fa-brands fa-youtube"></i></a>
+        <a href="https://blog.sc.senac.br" target="_blank"><i class="fa-solid fa-blog"></i></a>
+      </div>
+
+  <div>
+    <nav>
+      <button class="btn-primary" id="openFormBtn">Entrar</button>
+      <a href="#">Reservas de Salas</a>
+      <a href="#">Calendário</a>
+      <a href="#">Contatos</a>
+    </nav>
+  </div>
+</header>
+
+
+<img src="https://portal.sc.senac.br/assets/images/banners/banner_web_1763480577_7390.png" alt="Banner Senac 80 anos" class="banner" />
+<dialog id="modal" class="modal" aria-labelledby="formTitle">
+  <div class="modal-conteudo">
+    <h2 id="formTitle">Acessar Conta</h2>
+    
+    <form method="dialog"> <label for="email">E-mail:</label>
+      <input type="email" id="email" name="email" required>
+
+      <label for="senha">Senha:</label>
+      <input type="password" id="senha" name="senha" required>
+
+      <button type="submit" class="btn-enviar">Acessar</button>
+      <button type="button" id="closeFormBtn" class="btn-fechar">Cancelar</button>
+    </form>
+  </div>
+</dialog>
+
+  </header>
+
+  
+
+</body>
+</html>
+
+    <script src="script.js"></script>
+</body>
+</html>

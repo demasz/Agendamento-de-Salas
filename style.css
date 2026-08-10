@@ -1,0 +1,221 @@
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f2f2f2;}
+
+body {
+  font-family: 'Nunito', sans-serif;
+}
+
+  .header-senac{
+    background:linear-gradient(100deg,
+      #ea7c28 0%,
+      #c17251 18%,
+      #8d6c78 38%,
+      #5f6693 58%,
+      #2f59ab 78%,
+      #1453bd 100%);
+    padding:10px 40px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    row-gap:10px;
+  }
+img.banner {
+    width: 100%;
+}
+  .header-senac .logo{
+    display:flex;
+    align-items:center;
+    margin-left:167px;
+  }
+  .header-senac .logo img{
+    height:100px;
+    display:block;
+  }
+
+  .header-senac .direita{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:12px;
+    margin-right: 167px;
+  }
+
+  .header-senac .redes{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .header-senac .redes a{
+    color:#ffffff;
+    font-size:16px;
+    line-height:1;
+    opacity:0.95;
+    text-decoration:none;
+  }
+  .header-senac .redes a:hover{opacity:1;}
+
+  .header-senac nav{
+    display:flex;
+    align-items:center;
+    gap:30px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .header-senac nav a{
+    color:#ffffff;
+    font-size:22px;
+    font-weight:800;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+  .header-senac nav a:hover{
+    text-decoration:underline;
+  }
+.btn-primary {
+  background: #f4901e;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  background: #f59827;
+  box-shadow: 0 0 20px rgba(244, 144, 30, 0.7); 
+}
+
+  .header-senac nav a.destaque:hover{
+    background:#e07f10;
+    text-decoration:none;
+  }
+
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px); /* Desfoca levemente o fundo da página também */
+}
+
+dialog.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  padding: 0;
+  width: 90%;
+  max-width: 460px;
+  background: rgba(255, 255, 255, 0.12);   /* Efeito Vidro */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5),
+              0 0 25px rgba(224, 127, 16, 0.15);
+  color: #fff;
+  animation: modalAura 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;   /* Animação de Entrada */
+}
+
+.modal-conteudo {
+  padding: 40px 35px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-conteudo h2 {
+  margin: 0 0 5px 0;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.modal-conteudo form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-conteudo label {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.modal-conteudo input {
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.modal-conteudo input:focus {
+  border-color: #e07f10;
+  box-shadow: 0 0 12px rgba(224, 127, 16, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.modal-conteudo input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.btn-enviar {
+  background: #e07f10;
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 17px;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+}
+
+.btn-enviar:hover {
+  background: #f4901e;
+  box-shadow: 0 0 20px rgba(224, 127, 16, 0.6);
+  transform: translateY(-1px);
+}
+
+.btn-fechar {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.btn-fechar:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+@keyframes modalAura {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -46%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+  @media (max-width: 900px){
+    .header-senac{justify-content:center;text-align:center;}
+    .header-senac .direita{align-items:center;}
+    .header-senac nav{justify-content:center;}
+  }
