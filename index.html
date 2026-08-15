@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Header Senac</title>
+<title>Senac SC | Reserva de Salas</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700&display=swap" rel="stylesheet">
-<link href="https://portal.sc.senac.br/assets/vendor/fontawesome/css/all.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -17,8 +17,6 @@
 
     <div class="direita">
       <div class="redes">
-
-        <!-- lembrar de colocar as fotos do site -->
         <a href="https://www.facebook.com/SenacSC" target="_blank"><i class="fa-brands fa-facebook"></i></a>
         <a href="https://www.instagram.com/senacsantacatarina/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
         <a href="https://twitter.com/SenacSC" target="_blank"><i class="fa-brands fa-twitter"></i></a>
@@ -27,41 +25,117 @@
         <a href="https://blog.sc.senac.br" target="_blank"><i class="fa-solid fa-blog"></i></a>
       </div>
 
-  <div>
-    <nav>
-      <button class="btn-primary" id="openFormBtn">Entrar</button>
-      <a href="#">Reservas de Salas</a>
-      <a href="#">Calendário</a>
-      <a href="#">Contatos</a>
-    </nav>
-  </div>
-</header>
-
-
-<img src="https://portal.sc.senac.br/assets/images/banners/banner_web_1763480577_7390.png" alt="Banner Senac 80 anos" class="banner" />
-<dialog id="modal" class="modal" aria-labelledby="formTitle">
-  <div class="modal-conteudo">
-    <h2 id="formTitle">Acessar Conta</h2>
-    
-    <form method="dialog"> <label for="email">E-mail:</label>
-      <input type="email" id="email" name="email" required>
-
-      <label for="senha">Senha:</label>
-      <input type="password" id="senha" name="senha" required>
-
-      <button type="submit" class="btn-enviar">Acessar</button>
-      <button type="button" id="closeFormBtn" class="btn-fechar">Cancelar</button>
-    </form>
-  </div>
-</dialog>
-
+      <nav>
+        <button class="btn-primary" id="openFormBtn">Entrar</button>
+        <a href="reservas.html">Reservas de Salas</a>
+        <a href="#">Calendário</a>
+        <a href="#">Contatos</a>
+      </nav>
+    </div>
   </header>
 
-  
+  <img src="https://portal.sc.senac.br/assets/images/banners/banner_web_1763480577_7390.png" alt="Banner Senac 80 anos" class="banner" />
 
-</body>
-</html>
+  <section class="acesso-rapido">
+    <h2>Acesso rápido</h2>
 
-    <script src="script.js"></script>
+    <div class="acesso-grid">
+      <a href="https://portal.sc.senac.br/institucional/sobre-o-senac" class="acesso-card">
+        <i class="fa-solid fa-star"></i>
+        <span>Conheça o Senac SC</span>
+      </a>
+      <a href="https://licitacao.sc.senac.br" class="acesso-card">
+        <i class="fa-regular fa-file-lines"></i>
+        <span>Licitações</span>
+      </a>
+      <a href="https://blog.sc.senac.br" target="_blank" class="acesso-card">
+        <i class="fa-solid fa-blog"></i>
+        <span>Blog Senac SC</span>
+      </a>
+      <a href="https://portal.sc.senac.br/institucional/noticias" class="acesso-card">
+        <i class="fa-regular fa-newspaper"></i>
+        <span>Notícias</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="noticias">
+    <h2>Notícias</h2>
+
+    <div class="noticias-grid">
+      
+      <article class="noticia-item">
+        <img src="https://portal.sc.senac.br/admin/images/noticias/210.jpg?v=1786745637" alt="Notícia 1" class="noticia-thumb" />
+        <div class="noticia-conteudo">
+          <span class="noticia-data">13/08/2026 14:20</span>
+          <a href="https://portal.sc.senac.br/institucional/noticia/senac-participa-do-encatho--exprotel-com-estande-conjunto-e-palestra" class="noticia-titulo" target="_blank">Senac participa do Encatho & Exprotel com estande conjunto e palestra</a>
+          <p class="noticia-texto">Evento reúne principais empresas e entidades dos ramos de turismo e hotelaria no estado. O Senac Santa Catarina esteve presente, entre os dias 11 e 13 de agosto, na 37º edição do Encatho & Exprotel...</p>
+        </div>
+      </article>
+
+      <article class="noticia-item">
+        <img src="https://portal.sc.senac.br/admin/images/noticias/209.jpg?v=1786745637" alt="Notícia 2" class="noticia-thumb" />
+        <div class="noticia-conteudo">
+          <span class="noticia-data">11/08/2026 12:08</span>
+          <a href="https://portal.sc.senac.br/institucional/noticia/sessao-solene-na-alesc-homenageia-fecomercio-sc-sesc-e-senac" class="noticia-titulo" target="_blank">Sessão solene na Alesc homenageia Fecomércio SC, Sesc e Senac</a>
+          <p class="noticia-texto">Evento marca os 78 anos da Fecomércio SC e 80 anos do Senac e do Sesc. Nesta segunda-feira, dia 10, foi realizada uma sessão solene em homenagem aos 78 anos da Federação do Comércio de Bens...</p>
+        </div>
+      </article>
+
+      <article class="noticia-item">
+        <img src="https://portal.sc.senac.br/admin/images/noticias/208.jpg?v=1786745637" alt="Notícia 3" class="noticia-thumb" />
+        <div class="noticia-conteudo">
+          <span class="noticia-data">06/08/2026 11:29</span>
+          <a href="https://portal.sc.senac.br/institucional/noticia/palestra-gratuita-debate-como-a-lideranca-pode-prevenir-riscos-psicossociais-nas-empresas" class="noticia-titulo" target="_blank">Palestra gratuita debate como a liderança pode prevenir riscos psicossociais nas empresas</a>
+          <p class="noticia-texto">Evento promovido pela Faculdade Senac Criciúma mostrará como empresários e gestores podem fortalecer suas equipes diante das novas exigências da NR-1. A forma como líderes conduzem suas equipes tem impacto direto na saúde organizacional...</p>
+        </div>
+      </article>
+
+      <article class="noticia-item">
+        <img src="https://portal.sc.senac.br/admin/images/noticias/207.jpg?v=1786745637" alt="Notícia 4" class="noticia-thumb" />
+        <div class="noticia-conteudo">
+          <span class="noticia-data">03/08/2026 14:36</span>
+          <a href="https://portal.sc.senac.br/institucional/noticia/macroalga-cultivada-em-sc-vira-materia-prima-para-impressao-3d-de-alimentos-no-senac" class="noticia-titulo" target="_blank">Macroalga cultivada em SC vira matéria-prima para impressão 3D de alimentos no Senac</a>
+          <p class="noticia-texto">Tecnologia desenvolvida pelo Hub Senac Gastronomia do Mar, em parceria com Epagri e UFSC, cria alimentos funcionais e sustentáveis. A macroalga Kappaphycus alvarezii, cultivada no litoral catarinense, ganha espaço em uma frente de...</p>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="noticias-mais">
+      <a href="https://portal.sc.senac.br/institucional/noticias" target="_blank">Mais notícias <i class="fa-regular fa-newspaper"></i></a>
+    </div>
+  </section>
+
+  <footer class="footer-senac">
+    <div class="footer-logo">
+      <img src="https://portal.sc.senac.br/assets/images/logo-branco-80-anos.png" alt="Senac Fecomércio Sesc" />
+    </div>
+
+    <div class="footer-linha"></div>
+  </footer>
+
+  <button type="button" id="btnTopo" class="btn-topo" aria-label="Voltar ao topo">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
+
+  <dialog id="modal" class="modal" aria-labelledby="formTitle">
+    <div class="modal-conteudo">
+      <h2 id="formTitle">Acessar Conta</h2>
+
+      <form method="dialog">
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="senha">Senha:</label>
+        <input type="password" id="senha" name="senha" required>
+
+        <button type="submit" class="btn-enviar">Acessar</button>
+        <button type="button" id="closeFormBtn" class="btn-fechar">Cancelar</button>
+      </form>
+    </div>
+  </dialog>
+
+  <script src="script.js"></script>
 </body>
 </html>

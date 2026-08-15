@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Senac SC | Reservar Sala</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <header class="header-senac">
+    <div class="logo">
+      <img src="https://portal.sc.senac.br/assets/images/logo-branco-80-anos.png" alt="Senac Fecomércio Sesc" />
+    </div>
+
+    <div class="direita">
+      <div class="redes">
+        <a href="https://www.facebook.com/SenacSC" target="_blank"><i class="fa-brands fa-facebook"></i></a>
+        <a href="https://www.instagram.com/senacsantacatarina/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+        <a href="https://twitter.com/SenacSC" target="_blank"><i class="fa-brands fa-twitter"></i></a>
+        <a href="https://www.linkedin.com/school/senac-sc" target="_blank"><i class="fa-brands fa-linkedin"></i></a>
+        <a href="https://www.youtube.com/SenacSC" target="_blank"><i class="fa-brands fa-youtube"></i></a>
+        <a href="https://blog.sc.senac.br" target="_blank"><i class="fa-solid fa-blog"></i></a>
+      </div>
+
+      <nav>
+        <button class="btn-primary" id="openFormBtn">Entrar</button>
+        <a href="reservas.html" class="ativo">Reservas de Salas</a>
+        <a href="#">Calendário</a>
+        <a href="#">Contatos</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="pagina-reserva">
+    <div class="reserva-cabecalho">
+      <div>
+        <h1>Reservar uma sala</h1>
+        <p>Escolha a data, clique em um horário livre e confirme. Simples assim.</p>
+      </div>
+
+      <div class="reserva-controles">
+        <label for="dataReserva">Data</label>
+        <input type="date" id="dataReserva" />
+      </div>
+    </div>
+
+    <ul class="legenda">
+      <li class="legenda-item"><span class="bolinha bolinha-livre"></span> Livre</li>
+      <li class="legenda-item"><span class="bolinha bolinha-ocupada"></span> Ocupada</li>
+      <li class="legenda-item"><span class="bolinha bolinha-selecionada"></span> Selecionada</li>
+      <li class="legenda-item"><span class="bolinha bolinha-minha"></span> Sua reserva</li>
+    </ul>
+
+    <div class="reserva-layout">
+      <div class="grade-wrapper">
+        <div class="grade-salas" id="gradeSalas"></div>
+      </div>
+
+      <aside class="painel-lateral">
+        <div class="resumo-reserva">
+          <h2>Resumo</h2>
+          <p id="resumoTexto">Selecione um horário livre na grade acima.</p>
+          <button type="button" id="btnConfirmar" class="btn-primary" disabled>Confirmar Reserva</button>
+        </div>
+
+        <div class="minhas-reservas">
+          <h2>Suas próximas reservas</h2>
+          <ul id="listaReservas"></ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <dialog id="dialogConfirmacao" class="modal" aria-labelledby="dialogTitulo">
+    <div class="modal-conteudo">
+      <h2 id="dialogTitulo">Confirmar reserva</h2>
+      <p id="resumoDialog" class="resumo-dialog"></p>
+
+      <div class="dialog-acoes">
+        <button type="button" id="btnConfirmarFinal" class="btn-enviar">Confirmar</button>
+        <button type="button" id="btnCancelarDialog" class="btn-fechar">Cancelar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="modal" class="modal" aria-labelledby="formTitle">
+    <div class="modal-conteudo">
+      <h2 id="formTitle">Acessar Conta</h2>
+
+      <form method="dialog">
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="senha">Senha:</label>
+        <input type="password" id="senha" name="senha" required>
+
+        <button type="submit" class="btn-enviar">Acessar</button>
+        <button type="button" id="closeFormBtn" class="btn-fechar">Cancelar</button>
+      </form>
+    </div>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
