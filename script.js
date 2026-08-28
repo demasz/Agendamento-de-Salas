@@ -165,6 +165,9 @@ if (grade) {
   const resumoDialog = document.getElementById('resumoDialog');
   const btnConfirmarFinal = document.getElementById('btnConfirmarFinal');
   const btnCancelarDialog = document.getElementById('btnCancelarDialog');
+  const painelAprovacoes = document.getElementById('painelAprovacoes');
+  const listaPendentes = document.getElementById('listaPendentes');
+  const avisoPendentes = document.getElementById('avisoPendentes');
 
   let selecaoAtual = null;
 
@@ -193,6 +196,22 @@ if (grade) {
     const resposta = await fetch(`${API_BASE}/reservas?usuario_id=${encodeURIComponent(usuario.id)}`);
     if (!resposta.ok) throw new Error('Não foi possível consultar suas reservas no banco.');
     return resposta.json();
+  }
+
+  function podeAprovar() {
+    return ['ADMIN', 'GESTOR'].includes(usuarioLogado()?.papel);
+  }
+
+  async function carregarPendentes() {
+    const usuario = usuarioLogado();
+    if (!podeAprovar() || !usuario?.id) return [];
+    const resposta = await fetch(`${API_BASE}/gestao/pendentes?usuario_id=${encodeURIComponent(usuario.id)}`);
+    if (!resposta.ok) throw new Error('Não foi possível carregar as solicitações pendentes.');
+    return resposta.json();
+  }
+
+  function textoStatus(status) {
+    return ({ PENDENTE: 'Aguardando aprovação', APROVADA: 'Aprovada', RECUSADA: 'Recusada', CANCELADA: 'Cancelada' })[status] || status;
   }
 
   function salvarMinhasReservas(reservas) {
@@ -251,7 +270,7 @@ if (grade) {
 
       salas.forEach((sala) => {
         const chave = `${sala.id}|${horario}`;
-        const reservaExistente = minhasReservas.find((r) => r.data === data && r.chave === chave);
+        const reservaExistente = minhasReservas.find((r) => r.data === data && r.chave === chave && ['PENDENTE', 'APROVADA'].includes(r.status));
 
         const celula = document.createElement('button');
         celula.type = 'button';
@@ -260,7 +279,8 @@ if (grade) {
 
         if (reservaExistente) {
           celula.classList.add('minha-reserva');
-          celula.textContent = 'Sua reserva';
+          if (reservaExistente.status === 'PENDENTE') celula.classList.add('pendente');
+          celula.textContent = reservaExistente.status === 'PENDENTE' ? 'Pendente' : 'Sua reserva';
           celula.disabled = true;
         } else if (ocupacao[chave]) {
           celula.classList.add('ocupada');
@@ -314,8 +334,92 @@ if (grade) {
 
         item.appendChild(nomeSala);
         item.appendChild(detalhe);
+        const status = document.createElement('span');
+        status.className = `item-reserva-status ${reserva.status.toLowerCase()}`;
+        status.textContent = textoStatus(reserva.status);
+        item.appendChild(status);
+        if (['PENDENTE', 'APROVADA'].includes(reserva.status)) {
+          const acoes = document.createElement('div');
+          acoes.className = 'acoes-reserva';
+          const cancelar = document.createElement('button');
+          cancelar.type = 'button';
+          cancelar.className = 'btn-cancelar';
+          cancelar.textContent = 'Cancelar solicitação';
+          cancelar.addEventListener('click', () => cancelarReserva(reserva.id));
+          acoes.appendChild(cancelar);
+          item.appendChild(acoes);
+        }
         listaReservas.appendChild(item);
       });
+  }
+
+  async function cancelarReserva(id) {
+    const usuario = usuarioLogado();
+    if (!usuario?.id) return;
+    try {
+      const resposta = await fetch(`${API_BASE}/reservas/${id}/cancelar`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuarioId: usuario.id })
+      });
+      const resultado = await resposta.json();
+      if (!resposta.ok) throw new Error(resultado.error || 'Não foi possível cancelar a solicitação.');
+      await Promise.all([renderizarGrade(), renderizarMinhasReservas(), renderizarPendentes()]);
+    } catch (erro) {
+      resumoTexto.textContent = erro.message;
+    }
+  }
+
+  async function decidirSolicitacao(id, status) {
+    const usuario = usuarioLogado();
+    if (!usuario?.id) return;
+    try {
+      const resposta = await fetch(`${API_BASE}/gestao/reservas/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuarioId: usuario.id, status })
+      });
+      const resultado = await resposta.json();
+      if (!resposta.ok) throw new Error(resultado.error || 'Não foi possível atualizar a solicitação.');
+      await Promise.all([renderizarGrade(), renderizarMinhasReservas(), renderizarPendentes()]);
+    } catch (erro) {
+      avisoPendentes.textContent = erro.message;
+    }
+  }
+
+  async function renderizarPendentes() {
+    if (!painelAprovacoes || !listaPendentes || !avisoPendentes) return;
+    painelAprovacoes.hidden = !podeAprovar();
+    if (!podeAprovar()) return;
+    try {
+      const pendentes = await carregarPendentes();
+      listaPendentes.innerHTML = '';
+      avisoPendentes.textContent = pendentes.length ? `${pendentes.length} aguardando sua decisão.` : 'Nenhuma solicitação pendente.';
+      pendentes.forEach((reserva) => {
+        const item = document.createElement('li');
+        item.className = 'item-reserva';
+        const titulo = document.createElement('span');
+        titulo.className = 'item-reserva-sala';
+        titulo.textContent = `${reserva.sala_nome} · ${reserva.solicitante}`;
+        const detalhe = document.createElement('span');
+        detalhe.className = 'item-reserva-detalhe';
+        detalhe.textContent = `${formatarData(String(reserva.data_reserva).slice(0, 10))} · ${reserva.horario} · ${reserva.participantes} participante(s)`;
+        const acoes = document.createElement('div');
+        acoes.className = 'acoes-reserva';
+        const aprovar = document.createElement('button');
+        aprovar.type = 'button';
+        aprovar.textContent = 'Aprovar';
+        aprovar.addEventListener('click', () => decidirSolicitacao(reserva.id, 'APROVADA'));
+        const recusar = document.createElement('button');
+        recusar.type = 'button';
+        recusar.className = 'btn-recusar';
+        recusar.textContent = 'Recusar';
+        recusar.addEventListener('click', () => decidirSolicitacao(reserva.id, 'RECUSADA'));
+        acoes.append(aprovar, recusar);
+        item.append(titulo, detalhe, acoes);
+        listaPendentes.appendChild(item);
+      });
+    } catch (erro) {
+      avisoPendentes.textContent = erro.message;
+    }
   }
 
   btnConfirmar.addEventListener('click', () => {
@@ -352,7 +456,6 @@ if (grade) {
           usuarioId: usuario.id,
           finalidade: 'Reserva de sala',
           participantes: 1,
-          status: 'APROVADA',
         }),
       });
       const resultado = await resposta.json();
@@ -360,6 +463,8 @@ if (grade) {
       dialogConfirmacao.close();
       await renderizarGrade();
       await renderizarMinhasReservas();
+      await renderizarPendentes();
+      resumoTexto.textContent = 'Solicitação enviada. Aguarde a aprovação de um administrador.';
     } catch (erro) {
       resumoDialog.textContent = erro.message;
     } finally {
@@ -373,4 +478,5 @@ if (grade) {
   dataInput.value = new Date().toISOString().split('T')[0];
   renderizarGrade();
   renderizarMinhasReservas();
+  renderizarPendentes();
 }

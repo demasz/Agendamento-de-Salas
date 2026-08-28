@@ -438,6 +438,14 @@ dialog.modal {
   cursor: not-allowed;
 }
 
+.celula-sala.minha-reserva.pendente {
+  background: #fff3d8;
+  border-color: #e89512;
+  color: #8a5200;
+}
+
+.bolinha-pendente { background: #e89512; }
+
 .painel-lateral {
   display: flex;
   flex-direction: column;
@@ -497,6 +505,43 @@ dialog.modal {
   font-size: 13px;
   color: #5b5f68;
 }
+
+.item-reserva-status {
+  width: fit-content;
+  margin-top: 5px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #e8edf8;
+  color: #1453bd;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.item-reserva-status.pendente { background: #fff3d8; color: #8a5200; }
+.item-reserva-status.recusada,
+.item-reserva-status.cancelada { background: #fde8e8; color: #a02a2a; }
+
+.acoes-reserva {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.acoes-reserva button {
+  border: 0;
+  border-radius: 7px;
+  padding: 7px 9px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #1453bd;
+  color: #fff;
+}
+
+.acoes-reserva .btn-recusar,
+.acoes-reserva .btn-cancelar { background: #8f2d2d; }
 
 .reserva-vazia {
   color: #a3a3a3;

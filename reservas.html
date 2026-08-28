@@ -49,6 +49,7 @@
       <li class="legenda-item"><span class="bolinha bolinha-ocupada"></span> Ocupada</li>
       <li class="legenda-item"><span class="bolinha bolinha-selecionada"></span> Selecionada</li>
       <li class="legenda-item"><span class="bolinha bolinha-minha"></span> Sua reserva</li>
+      <li class="legenda-item"><span class="bolinha bolinha-pendente"></span> Aguardando aprovação</li>
     </ul>
     <div class="reserva-layout">
       <div class="grade-wrapper">
@@ -61,9 +62,14 @@
           <button type="button" id="btnConfirmar" class="btn-primary" disabled>Confirmar Reserva</button>
         </div>
         <div class="minhas-reservas">
-          <h2>Suas próximas reservas</h2>
+          <h2>Suas solicitações</h2>
           <ul id="listaReservas"></ul>
         </div>
+        <section id="painelAprovacoes" class="minhas-reservas" hidden>
+          <h2>Solicitações pendentes</h2>
+          <p id="avisoPendentes" class="reserva-vazia"></p>
+          <ul id="listaPendentes"></ul>
+        </section>
       </aside>
     </div>
   </main>

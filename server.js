@@ -23,6 +23,16 @@ app.use(express.static(__dirname));
 const slots = new Set(['08:00 - 10:00','10:15 - 12:15','13:30 - 15:30','15:45 - 17:45','19:00 - 21:00','21:15 - 23:00']);
 const fail = (res, code, message) => res.status(code).json({ error: message });
 const hashSenha = (senha) => crypto.scryptSync(senha, 'senac-agendamento-demo', 64).toString('hex');
+const papeisGestao = new Set(['ADMIN', 'GESTOR']);
+
+async function usuarioAtivo(id) {
+  if (!Number.isInteger(id)) return null;
+  const [[usuario]] = await pool.execute(
+    'SELECT id, nome, papel FROM usuarios WHERE id = ? AND ativo = TRUE',
+    [id]
+  );
+  return usuario || null;
+}
 
 app.get('/api/health', async (_req, res) => {
   try { await pool.query('SELECT 1'); res.json({ ok: true }); }
@@ -81,29 +91,31 @@ app.get('/api/reservas', async (req, res) => {
   if (!Number.isInteger(userId)) return fail(res, 400, 'Usuário inválido.');
   const [rows] = await pool.execute(`SELECT r.id, DATE_FORMAT(r.data_reserva, '%Y-%m-%d') AS data, r.horario, CONCAT(s.slug, '|', r.horario) AS chave, s.slug, s.nome AS salaNome,
     r.finalidade, r.status FROM reservas r JOIN salas s ON s.id = r.sala_id
-    WHERE r.solicitante_id = ? AND r.status IN ('PENDENTE','APROVADA') ORDER BY r.data_reserva, r.horario`, [userId]);
+    WHERE r.solicitante_id = ? ORDER BY r.data_reserva, r.horario`, [userId]);
   res.json(rows);
 });
 
 app.post('/api/reservas', async (req, res) => {
-  const { salaSlug, data, horario, usuarioId, finalidade = 'Reserva de sala', participantes = 1, status = 'APROVADA' } = req.body;
+  const { salaSlug, data, horario, usuarioId, finalidade = 'Reserva de sala', participantes = 1 } = req.body;
   if (!salaSlug || !/^\d{4}-\d{2}-\d{2}$/.test(data || '') || !slots.has(horario) || !Number.isInteger(usuarioId)) return fail(res, 400, 'Dados da reserva inválidos.');
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
+    const [[solicitante]] = await conn.execute('SELECT id FROM usuarios WHERE id = ? AND ativo = TRUE FOR UPDATE', [usuarioId]);
+    if (!solicitante) { await conn.rollback(); return fail(res, 403, 'Seu acesso não está ativo.'); }
     const [[sala]] = await conn.execute('SELECT id, capacidade FROM salas WHERE slug = ? AND ativa = TRUE FOR UPDATE', [salaSlug]);
     if (!sala) { await conn.rollback(); return fail(res, 404, 'Sala não encontrada.'); }
     if (Number(participantes) > sala.capacidade) { await conn.rollback(); return fail(res, 400, 'Quantidade de participantes excede a capacidade da sala.'); }
-    const [[ocupada]] = await conn.execute(`SELECT id FROM reservas WHERE sala_id = ? AND data_reserva = ? AND horario = ? AND status = 'APROVADA' FOR UPDATE`, [sala.id, data, horario]);
-    if (ocupada) { await conn.rollback(); return fail(res, 409, 'Este horário acabou de ser ocupado por outra reserva.'); }
     const [result] = await conn.execute(`INSERT INTO reservas (sala_id, solicitante_id, data_reserva, horario, finalidade, participantes, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`, [sala.id, usuarioId, data, horario, finalidade, participantes, status]);
-    await conn.commit(); res.status(201).json({ id: result.insertId, status });
+      VALUES (?, ?, ?, ?, ?, ?, 'PENDENTE')`, [sala.id, usuarioId, data, horario, finalidade, participantes]);
+    await conn.commit(); res.status(201).json({ id: result.insertId, status: 'PENDENTE' });
   } catch (error) { await conn.rollback(); console.error(error); fail(res, 500, 'Não foi possível gravar a reserva.'); }
   finally { conn.release(); }
 });
 
-app.get('/api/gestao/pendentes', async (_req, res) => {
+app.get('/api/gestao/pendentes', async (req, res) => {
+  const gestor = await usuarioAtivo(Number(req.query.usuario_id));
+  if (!gestor || !papeisGestao.has(gestor.papel)) return fail(res, 403, 'Apenas administradores e gestores podem aprovar reservas.');
   const [rows] = await pool.query(`SELECT r.*, s.nome AS sala_nome, s.andar_bloco, u.nome AS solicitante
     FROM reservas r JOIN salas s ON s.id=r.sala_id JOIN usuarios u ON u.id=r.solicitante_id
     WHERE r.status='PENDENTE' ORDER BY r.criada_em`);
@@ -111,9 +123,34 @@ app.get('/api/gestao/pendentes', async (_req, res) => {
 });
 app.patch('/api/gestao/reservas/:id', async (req, res) => {
   const status = req.body.status;
+  const gestor = await usuarioAtivo(Number(req.body.usuarioId));
+  if (!gestor || !papeisGestao.has(gestor.papel)) return fail(res, 403, 'Apenas administradores e gestores podem aprovar reservas.');
   if (!['APROVADA','RECUSADA','CANCELADA'].includes(status)) return fail(res, 400, 'Status inválido.');
-  const [result] = await pool.execute('UPDATE reservas SET status=? WHERE id=?', [status, req.params.id]);
-  if (!result.affectedRows) return fail(res, 404, 'Reserva não encontrada.');
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const [[reserva]] = await conn.execute('SELECT * FROM reservas WHERE id = ? FOR UPDATE', [req.params.id]);
+    if (!reserva) { await conn.rollback(); return fail(res, 404, 'Reserva não encontrada.'); }
+    if (reserva.status !== 'PENDENTE') { await conn.rollback(); return fail(res, 409, 'Esta solicitação já foi decidida.'); }
+    if (status === 'APROVADA') {
+      const [[ocupada]] = await conn.execute(`SELECT id FROM reservas
+        WHERE sala_id = ? AND data_reserva = ? AND horario = ? AND status = 'APROVADA' FOR UPDATE`,
+        [reserva.sala_id, reserva.data_reserva, reserva.horario]);
+      if (ocupada) { await conn.rollback(); return fail(res, 409, 'Este horário já foi aprovado para outra reserva.'); }
+    }
+    await conn.execute('UPDATE reservas SET status = ? WHERE id = ?', [status, reserva.id]);
+    await conn.commit();
+  } catch (error) { await conn.rollback(); console.error(error); return fail(res, 500, 'Não foi possível atualizar a solicitação.'); }
+  finally { conn.release(); }
+  res.json({ ok: true });
+});
+
+app.patch('/api/reservas/:id/cancelar', async (req, res) => {
+  const usuario = await usuarioAtivo(Number(req.body.usuarioId));
+  if (!usuario) return fail(res, 403, 'Seu acesso não está ativo.');
+  const [result] = await pool.execute(`UPDATE reservas SET status = 'CANCELADA'
+    WHERE id = ? AND solicitante_id = ? AND status IN ('PENDENTE', 'APROVADA')`, [req.params.id, usuario.id]);
+  if (!result.affectedRows) return fail(res, 404, 'Reserva não encontrada ou não pode mais ser cancelada.');
   res.json({ ok: true });
 });
 
