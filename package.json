@@ -1,0 +1,28 @@
+{
+  "name": "agendamento-sala",
+  "version": "1.0.0",
+  "description": "Desenvolvido como um projeto acadêmico, o sistema de Agendamento de Salas do Senac foi criado para simplificar e organizar a reserva de espaços educacionais. Com uma interface moderna, intuitiva e acessível, a plataforma permite que alunos e professores consultem horários disponíveis e realizem suas reservas de forma rápida e descomplicada.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "db:fix-encoding": "node scripts/corrigir-acentuacao.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/demasz/Agendamento-de-Salas.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/demasz/Agendamento-de-Salas/issues"
+  },
+  "homepage": "https://github.com/demasz/Agendamento-de-Salas#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mysql2": "^3.24.2"
+  }
+}

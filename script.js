@@ -29,6 +29,7 @@ if (btnTopo) {
 // Reserva de salas estilo cinema (reservas.html)
 // ---------------------------------
 const grade = document.getElementById('gradeSalas');
+const API_BASE = window.location.port === '3000' ? '/api' : 'http://localhost:3000/api';
 
 if (grade) {
   const salas = [
@@ -67,28 +68,21 @@ if (grade) {
     return 'senac-minhas-reservas';
   }
 
-  function carregarOcupacao(data) {
-    const salvo = localStorage.getItem(chaveOcupacao(data));
-    if (salvo) return JSON.parse(salvo);
-
-    // Ocupação inicial simulada: algumas salas já reservadas por outros professores
-    const ocupadas = {};
-    salas.forEach((sala) => {
-      horarios.forEach((horario) => {
-        ocupadas[`${sala.id}|${horario}`] = Math.random() < 0.25;
-      });
-    });
-    localStorage.setItem(chaveOcupacao(data), JSON.stringify(ocupadas));
-    return ocupadas;
+  async function carregarOcupacao(data) {
+    const resposta = await fetch(`${API_BASE}/ocupacao?data=${encodeURIComponent(data)}`);
+    if (!resposta.ok) throw new Error('Não foi possível consultar a ocupação no banco.');
+    const registros = await resposta.json();
+    return Object.fromEntries(registros.map((registro) => [registro.chave, registro]));
   }
 
   function salvarOcupacao(data, ocupacao) {
     localStorage.setItem(chaveOcupacao(data), JSON.stringify(ocupacao));
   }
 
-  function carregarMinhasReservas() {
-    const salvo = localStorage.getItem(chaveReservas());
-    return salvo ? JSON.parse(salvo) : [];
+  async function carregarMinhasReservas() {
+    const resposta = await fetch(`${API_BASE}/reservas?usuario_id=1`);
+    if (!resposta.ok) throw new Error('Não foi possível consultar suas reservas no banco.');
+    return resposta.json();
   }
 
   function salvarMinhasReservas(reservas) {
@@ -122,10 +116,17 @@ if (grade) {
     btnConfirmar.disabled = false;
   }
 
-  function renderizarGrade() {
+  async function renderizarGrade() {
     const data = dataInput.value;
-    const ocupacao = carregarOcupacao(data);
-    const minhasReservas = carregarMinhasReservas();
+    let ocupacao;
+    let minhasReservas;
+    try {
+      [ocupacao, minhasReservas] = await Promise.all([carregarOcupacao(data), carregarMinhasReservas()]);
+    } catch (erro) {
+      ocupacao = {};
+      minhasReservas = [];
+      resumoTexto.textContent = 'Grade disponível. A confirmação depende da conexão com o banco de dados.';
+    }
 
     grade.innerHTML = '';
     grade.style.setProperty('--colunas', salas.length);
@@ -168,8 +169,14 @@ if (grade) {
     limparResumo();
   }
 
-  function renderizarMinhasReservas() {
-    const minhasReservas = carregarMinhasReservas();
+  async function renderizarMinhasReservas() {
+    let minhasReservas;
+    try {
+      minhasReservas = await carregarMinhasReservas();
+    } catch (erro) {
+      listaReservas.innerHTML = '<li class="reserva-vazia">Não foi possível carregar as reservas.</li>';
+      return;
+    }
     listaReservas.innerHTML = '';
 
     if (minhasReservas.length === 0) {
@@ -211,25 +218,33 @@ if (grade) {
     dialogConfirmacao.close();
   });
 
-  btnConfirmarFinal.addEventListener('click', () => {
+  btnConfirmarFinal.addEventListener('click', async () => {
     if (!selecaoAtual) return;
-
-    const ocupacao = carregarOcupacao(selecaoAtual.data);
-    ocupacao[selecaoAtual.chave] = true;
-    salvarOcupacao(selecaoAtual.data, ocupacao);
-
-    const minhasReservas = carregarMinhasReservas();
-    minhasReservas.push({
-      data: selecaoAtual.data,
-      chave: selecaoAtual.chave,
-      horario: selecaoAtual.horario,
-      salaNome: selecaoAtual.sala.nome,
-    });
-    salvarMinhasReservas(minhasReservas);
-
-    dialogConfirmacao.close();
-    renderizarGrade();
-    renderizarMinhasReservas();
+    btnConfirmarFinal.disabled = true;
+    try {
+      const resposta = await fetch(`${API_BASE}/reservas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          salaSlug: selecaoAtual.sala.id,
+          data: selecaoAtual.data,
+          horario: selecaoAtual.horario,
+          usuarioId: 1,
+          finalidade: 'Reserva de sala',
+          participantes: 1,
+          status: 'APROVADA',
+        }),
+      });
+      const resultado = await resposta.json();
+      if (!resposta.ok) throw new Error(resultado.error || 'Não foi possível salvar a reserva.');
+      dialogConfirmacao.close();
+      await renderizarGrade();
+      await renderizarMinhasReservas();
+    } catch (erro) {
+      resumoDialog.textContent = erro.message;
+    } finally {
+      btnConfirmarFinal.disabled = false;
+    }
   });
 
   dataInput.addEventListener('change', renderizarGrade);
