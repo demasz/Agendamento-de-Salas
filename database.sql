@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nome VARCHAR(120) NOT NULL,
   email VARCHAR(160) NOT NULL UNIQUE,
+  senha_hash CHAR(128) NOT NULL DEFAULT '',
   papel ENUM('ADMIN','GESTOR','PROFESSOR','COLABORADOR') NOT NULL DEFAULT 'PROFESSOR',
   ativo BOOLEAN NOT NULL DEFAULT TRUE,
   criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -63,6 +64,11 @@ CREATE TABLE IF NOT EXISTS reservas (
 INSERT IGNORE INTO usuarios (id, nome, email, papel) VALUES
   (1, 'Professor demonstração', 'professor@senac.local', 'PROFESSOR'),
   (2, 'Administradora demonstração', 'admin@senac.local', 'ADMIN');
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS senha_hash CHAR(128) NOT NULL DEFAULT '' AFTER email;
+UPDATE usuarios
+  SET senha_hash = 'f84ed036f20de12b63ad08ec5023128ec9b65c424757c2752afa230edf1715c01d3d4d9fd46110c5d8194ddc6d38f6e5ecf591e3f78cf18f8c0f3f9a208273c6'
+  WHERE email IN ('professor@senac.local', 'admin@senac.local') AND senha_hash = '';
+
 INSERT IGNORE INTO salas (slug, nome, andar_bloco, descricao, capacidade) VALUES
   ('sala-101', 'Sala 101', '1º andar - Bloco A', 'Sala de aula', 35),
   ('sala-102', 'Sala 102', '1º andar - Bloco A', 'Sala de aula', 30),

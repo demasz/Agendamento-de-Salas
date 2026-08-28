@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2/promise');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const pool = mysql.createPool({
@@ -21,10 +22,26 @@ app.use(express.static(__dirname));
 
 const slots = new Set(['08:00 - 10:00','10:15 - 12:15','13:30 - 15:30','15:45 - 17:45','19:00 - 21:00','21:15 - 23:00']);
 const fail = (res, code, message) => res.status(code).json({ error: message });
+const hashSenha = (senha) => crypto.scryptSync(senha, 'senac-agendamento-demo', 64).toString('hex');
 
 app.get('/api/health', async (_req, res) => {
   try { await pool.query('SELECT 1'); res.json({ ok: true }); }
   catch { fail(res, 503, 'Banco de dados indisponível.'); }
+});
+
+app.post('/api/login', async (req, res) => {
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const senha = String(req.body.senha || '');
+  if (!email || !senha) return fail(res, 400, 'Informe e-mail e senha.');
+  const [[usuario]] = await pool.execute(
+    'SELECT id, nome, email, papel, senha_hash FROM usuarios WHERE email = ? AND ativo = TRUE',
+    [email]
+  );
+  const senhaValida = Boolean(usuario?.senha_hash) && crypto.timingSafeEqual(
+    Buffer.from(hashSenha(senha), 'hex'), Buffer.from(usuario.senha_hash, 'hex')
+  );
+  if (!senhaValida) return fail(res, 401, 'E-mail ou senha invÃ¡lidos.');
+  res.json({ id: usuario.id, nome: usuario.nome, email: usuario.email, papel: usuario.papel });
 });
 
 app.get('/api/ocupacao', async (req, res) => {

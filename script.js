@@ -1,22 +1,79 @@
-// ---------------------------------
-// Modal de login (index.html / reservas.html)
-// ---------------------------------
+const API_BASE = window.location.port === '3000' ? '/api' : 'http://localhost:3000/api';
+const CHAVE_SESSAO = 'senac-usuario-logado';
 const modal = document.getElementById('modal');
 const openBtn = document.getElementById('openFormBtn');
 const closeBtn = document.getElementById('closeFormBtn');
+const loginForm = modal?.querySelector('form');
+let destinoPendente = null;
+
+function usuarioLogado() {
+  try { return JSON.parse(localStorage.getItem(CHAVE_SESSAO)); } catch { return null; }
+}
+
+function atualizarNavegacao() {
+  if (openBtn) openBtn.hidden = Boolean(usuarioLogado());
+}
+
+function abrirLogin(destino = null) {
+  destinoPendente = destino;
+  if (modal && !modal.open) modal.showModal();
+}
 
 if (modal && openBtn && closeBtn) {
   openBtn.addEventListener('click', () => {
-    modal.showModal();
+    abrirLogin();
   });
   closeBtn.addEventListener('click', () => {
     modal.close();
   });
 }
 
-// ---------------------------------
-// Botão de voltar ao topo (footer)
-// ---------------------------------
+document.querySelectorAll('nav a').forEach((link) => {
+  link.addEventListener('click', (event) => {
+    if (usuarioLogado()) return;
+    event.preventDefault();
+    abrirLogin({ href: link.href, target: link.target });
+  });
+});
+
+if (loginForm) {
+  const loginMensagem = document.createElement('p');
+  loginMensagem.setAttribute('role', 'alert');
+  loginMensagem.setAttribute('aria-live', 'polite');
+  loginForm.appendChild(loginMensagem);
+  loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const botao = loginForm.querySelector('[type="submit"]');
+    const email = loginForm.email.value.trim();
+    const senha = loginForm.senha.value;
+    botao.disabled = true;
+    loginMensagem.textContent = 'Validando acesso...';
+    try {
+      const resposta = await fetch(`${API_BASE}/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha })
+      });
+      const usuario = await resposta.json();
+      if (!resposta.ok) throw new Error(usuario.error || 'NÃ£o foi possÃ­vel entrar.');
+      localStorage.setItem(CHAVE_SESSAO, JSON.stringify(usuario));
+      modal.close();
+      loginForm.reset();
+      atualizarNavegacao();
+      if (destinoPendente) {
+        const { href, target } = destinoPendente;
+        destinoPendente = null;
+        if (target === '_blank') window.open(href, '_blank'); else window.location.href = href;
+      }
+    } catch (erro) {
+      loginMensagem.textContent = erro.message;
+    } finally {
+      botao.disabled = false;
+    }
+  });
+}
+
+atualizarNavegacao();
+
 const btnTopo = document.getElementById('btnTopo');
 
 if (btnTopo) {
@@ -25,12 +82,7 @@ if (btnTopo) {
   });
 }
 
-// ---------------------------------
-// Reserva de salas estilo cinema (reservas.html)
-// ---------------------------------
 const grade = document.getElementById('gradeSalas');
-const API_BASE = window.location.port === '3000' ? '/api' : 'http://localhost:3000/api';
-
 if (grade) {
   const salas = [
     { id: 'sala-101', nome: 'Sala 101' },
