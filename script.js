@@ -2,6 +2,7 @@ const API_BASE = window.location.port === '3000' ? '/api' : 'http://localhost:30
 const CHAVE_SESSAO = 'senac-usuario-logado';
 const modal = document.getElementById('modal');
 const openBtn = document.getElementById('openFormBtn');
+const logoutBtn = document.getElementById('logoutBtn');
 const closeBtn = document.getElementById('closeFormBtn');
 const loginForm = modal?.querySelector('form');
 const toggleCadastro = document.getElementById('toggleCadastro');
@@ -44,7 +45,9 @@ function fecharLogin() {
 }
 
 function atualizarNavegacao() {
-  if (openBtn) openBtn.hidden = Boolean(usuarioLogado());
+  const autenticado = Boolean(usuarioLogado());
+  if (openBtn) openBtn.hidden = autenticado;
+  if (logoutBtn) logoutBtn.hidden = !autenticado;
 }
 
 function abrirLogin(destino = null) {
@@ -59,6 +62,14 @@ if (modal && openBtn && closeBtn) {
   });
   closeBtn.addEventListener('click', () => {
     fecharLogin();
+  });
+}
+
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem(CHAVE_SESSAO);
+    destinoPendente = null;
+    atualizarNavegacao();
   });
 }
 
@@ -107,7 +118,10 @@ if (loginForm) {
         if (target === '_blank') window.open(href, '_blank'); else window.location.href = href;
       }
     } catch (erro) {
-      loginMensagem.textContent = erro.message;
+      const falhaDeConexao = erro instanceof TypeError && /failed to fetch/i.test(erro.message);
+      loginMensagem.textContent = falhaDeConexao
+        ? 'Não foi possível conectar ao servidor. Inicie o sistema com “npm start” e acesse http://localhost:3000.'
+        : erro.message;
     } finally {
       botao.disabled = false;
     }
