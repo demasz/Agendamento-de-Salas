@@ -4,10 +4,43 @@ const modal = document.getElementById('modal');
 const openBtn = document.getElementById('openFormBtn');
 const closeBtn = document.getElementById('closeFormBtn');
 const loginForm = modal?.querySelector('form');
+const toggleCadastro = document.getElementById('toggleCadastro');
+const campoNome = document.getElementById('campoNome');
+const campoConfirmacaoSenha = document.getElementById('campoConfirmacaoSenha');
+const formTitle = document.getElementById('formTitle');
+const formDescription = document.getElementById('formDescription');
+const mensagemAcesso = document.getElementById('mensagemAcesso');
 let destinoPendente = null;
+let modoCadastro = false;
 
 function usuarioLogado() {
   try { return JSON.parse(localStorage.getItem(CHAVE_SESSAO)); } catch { return null; }
+}
+
+function alterarModoAcesso(cadastro) {
+  modoCadastro = cadastro;
+  if (!loginForm) return;
+  const nome = loginForm.elements.nome;
+  const confirmacaoSenha = loginForm.elements.confirmacaoSenha;
+  campoNome.hidden = !cadastro;
+  campoConfirmacaoSenha.hidden = !cadastro;
+  nome.required = cadastro;
+  confirmacaoSenha.required = cadastro;
+  loginForm.elements.senha.autocomplete = cadastro ? 'new-password' : 'current-password';
+  formTitle.textContent = cadastro ? 'Criar conta' : 'Acessar conta';
+  formDescription.textContent = cadastro
+    ? 'Preencha seus dados para realizar o primeiro acesso.'
+    : 'Informe seus dados para continuar.';
+  toggleCadastro.textContent = cadastro
+    ? 'Já possui uma conta? Acessar'
+    : 'É seu primeiro acesso? Crie sua conta';
+  mensagemAcesso.textContent = '';
+}
+
+function fecharLogin() {
+  modal.close();
+  loginForm?.reset();
+  alterarModoAcesso(false);
 }
 
 function atualizarNavegacao() {
@@ -16,6 +49,7 @@ function atualizarNavegacao() {
 
 function abrirLogin(destino = null) {
   destinoPendente = destino;
+  alterarModoAcesso(false);
   if (modal && !modal.open) modal.showModal();
 }
 
@@ -24,8 +58,12 @@ if (modal && openBtn && closeBtn) {
     abrirLogin();
   });
   closeBtn.addEventListener('click', () => {
-    modal.close();
+    fecharLogin();
   });
+}
+
+if (toggleCadastro) {
+  toggleCadastro.addEventListener('click', () => alterarModoAcesso(!modoCadastro));
 }
 
 document.querySelectorAll('nav a').forEach((link) => {
@@ -37,27 +75,31 @@ document.querySelectorAll('nav a').forEach((link) => {
 });
 
 if (loginForm) {
-  const loginMensagem = document.createElement('p');
-  loginMensagem.setAttribute('role', 'alert');
-  loginMensagem.setAttribute('aria-live', 'polite');
-  loginForm.appendChild(loginMensagem);
+  const loginMensagem = mensagemAcesso;
   loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const botao = loginForm.querySelector('[type="submit"]');
     const email = loginForm.email.value.trim();
     const senha = loginForm.senha.value;
+    const nome = loginForm.elements.nome.value.trim();
+    const confirmacaoSenha = loginForm.elements.confirmacaoSenha.value;
+    if (modoCadastro && senha !== confirmacaoSenha) {
+      loginMensagem.textContent = 'As senhas informadas não são iguais.';
+      loginForm.elements.confirmacaoSenha.focus();
+      return;
+    }
+    if (!loginForm.reportValidity()) return;
     botao.disabled = true;
-    loginMensagem.textContent = 'Validando acesso...';
+    loginMensagem.textContent = modoCadastro ? 'Criando conta...' : 'Validando acesso...';
     try {
-      const resposta = await fetch(`${API_BASE}/login`, {
+      const resposta = await fetch(`${API_BASE}${modoCadastro ? '/usuarios' : '/login'}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha })
+        body: JSON.stringify(modoCadastro ? { nome, email, senha } : { email, senha })
       });
-      const usuario = await resposta.json();
+      const usuario = await resposta.json().catch(() => ({}));
       if (!resposta.ok) throw new Error(usuario.error || 'NÃ£o foi possÃ­vel entrar.');
       localStorage.setItem(CHAVE_SESSAO, JSON.stringify(usuario));
-      modal.close();
-      loginForm.reset();
+      fecharLogin();
       atualizarNavegacao();
       if (destinoPendente) {
         const { href, target } = destinoPendente;
@@ -132,7 +174,9 @@ if (grade) {
   }
 
   async function carregarMinhasReservas() {
-    const resposta = await fetch(`${API_BASE}/reservas?usuario_id=1`);
+    const usuario = usuarioLogado();
+    if (!usuario?.id) return [];
+    const resposta = await fetch(`${API_BASE}/reservas?usuario_id=${encodeURIComponent(usuario.id)}`);
     if (!resposta.ok) throw new Error('Não foi possível consultar suas reservas no banco.');
     return resposta.json();
   }
@@ -262,6 +306,10 @@ if (grade) {
 
   btnConfirmar.addEventListener('click', () => {
     if (!selecaoAtual) return;
+    if (!usuarioLogado()?.id) {
+      abrirLogin();
+      return;
+    }
     resumoDialog.textContent = `${selecaoAtual.sala.nome} · ${selecaoAtual.horario} · ${formatarData(selecaoAtual.data)}`;
     dialogConfirmacao.showModal();
   });
@@ -272,6 +320,12 @@ if (grade) {
 
   btnConfirmarFinal.addEventListener('click', async () => {
     if (!selecaoAtual) return;
+    const usuario = usuarioLogado();
+    if (!usuario?.id) {
+      dialogConfirmacao.close();
+      abrirLogin();
+      return;
+    }
     btnConfirmarFinal.disabled = true;
     try {
       const resposta = await fetch(`${API_BASE}/reservas`, {
@@ -281,7 +335,7 @@ if (grade) {
           salaSlug: selecaoAtual.sala.id,
           data: selecaoAtual.data,
           horario: selecaoAtual.horario,
-          usuarioId: 1,
+          usuarioId: usuario.id,
           finalidade: 'Reserva de sala',
           participantes: 1,
           status: 'APROVADA',

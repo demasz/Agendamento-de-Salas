@@ -44,6 +44,29 @@ app.post('/api/login', async (req, res) => {
   res.json({ id: usuario.id, nome: usuario.nome, email: usuario.email, papel: usuario.papel });
 });
 
+app.post('/api/usuarios', async (req, res) => {
+  const nome = String(req.body.nome || '').trim().replace(/\s+/g, ' ');
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const senha = String(req.body.senha || '');
+
+  if (nome.length < 3 || nome.length > 120) return fail(res, 400, 'Informe seu nome completo.');
+  if (!/^\S+@\S+\.\S+$/.test(email) || email.length > 160) return fail(res, 400, 'Informe um e-mail válido.');
+  if (senha.length < 6) return fail(res, 400, 'A senha deve ter pelo menos 6 caracteres.');
+
+  try {
+    const [result] = await pool.execute(
+      `INSERT INTO usuarios (nome, email, senha_hash, papel, ativo)
+       VALUES (?, ?, ?, 'PROFESSOR', TRUE)`,
+      [nome, email, hashSenha(senha)]
+    );
+    res.status(201).json({ id: result.insertId, nome, email, papel: 'PROFESSOR' });
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') return fail(res, 409, 'Este e-mail já possui uma conta. Faça o login.');
+    console.error(error);
+    fail(res, 500, 'Não foi possível criar a conta agora.');
+  }
+});
+
 app.get('/api/ocupacao', async (req, res) => {
   const { data } = req.query;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(data || '')) return fail(res, 400, 'Data inválida.');

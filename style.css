@@ -156,6 +156,12 @@ dialog.modal {
   letter-spacing: 0.5px;
 }
 
+.modal-descricao {
+  margin: -12px 0 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .modal-conteudo form {
   display: flex;
   flex-direction: column;
@@ -165,6 +171,12 @@ dialog.modal {
 .modal-conteudo label {
   font-size: 15px;
   font-weight: 500;
+}
+
+.modal-conteudo form > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .modal-conteudo input {
@@ -234,6 +246,28 @@ dialog.modal {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
   border-color: rgba(255, 255, 255, 0.6);
+}
+
+.btn-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #ffd2a2;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.btn-link:hover,
+.btn-link:focus-visible {
+  color: #fff;
+}
+
+.mensagem-acesso {
+  min-height: 1.25em;
+  margin: -4px 0 0;
+  color: #ffd2a2;
+  font-size: 14px;
 }
 
 @keyframes modalAura {
@@ -758,4 +792,4 @@ dialog.modal {
   .footer-links {
     grid-template-columns: 1fr;
   }
-} 
+}
